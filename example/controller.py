@@ -1,3 +1,3 @@
 import digit_controller_pybind as dc
 
-# dir(dc.Digit_Controller)
+print(dir(dc.Digit_Controller))
