@@ -5,16 +5,17 @@ print(dir(dc.Digit_Controller))
 
 # Agility LLAPI types
 
-# print("Observation")
-# print(dir(dc.Observation))
-# obs = dc.Observation()
-# print(f"Time: {obs.time}")
-# print(f"Error: {obs.error}")
-# print(f"Base: {obs.base}")
-# print(f"IMU: {obs.imu}")
-# print(f"Motor: {obs.motor}")
-# print(f"Joint: {obs.joint}")
-# print(f"Battery Charge: {obs.battery_charge}")
+print("Observation")
+print(dir(dc.Observation))
+obs = dc.Observation()
+print(f"Time: {obs.time}")
+print(f"Error: {obs.error}")
+print(f"Base: {obs.base}")
+print(f"IMU: {obs.imu}")
+print(f"Motor: {obs.motor}")
+print(f"Joint: {obs.joint}")
+import pdb; pdb.set_trace()
+print(f"Battery Charge: {obs.battery_charge}")
 
 
 print("Limits")

@@ -35,30 +35,118 @@ PYBIND11_MODULE(digit_controller_pybind, m) {
         .def_readwrite("battery_charge", &llapi_observation_t::battery_charge);
 
     // llapi_observation_t subtypes
-    py::class_<llapi_observation_t::Base>(m, "Base")
+    py::class_<llapi_observation_t::Base>(m, "ObsBase")
         .def(py::init<>())
-        .def_readwrite("translation", &llapi_observation_t::Base::translation)
         .def_readwrite("orientation", &llapi_observation_t::Base::orientation)
-        .def_readwrite("linear_velocity", &llapi_observation_t::Base::linear_velocity)
-        .def_readwrite("angular_velocity", &llapi_observation_t::Base::angular_velocity);
+        .def_property("angular_velocity", [](const llapi_observation_t::Base &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.angular_velocity, base);
+        }, [](llapi_observation_t::Base &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.angular_velocity, arr.data(), 3 * sizeof(double));
+        })
+        .def_property("linear_velocity", [](const llapi_observation_t::Base &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.linear_velocity, base);
+        }, [](llapi_observation_t::Base &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.linear_velocity, arr.data(), 3 * sizeof(double));
+        })
+        .def_property("translation", [](const llapi_observation_t::Base &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.translation, base);
+        }, [](llapi_observation_t::Base &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.translation, arr.data(), 3 * sizeof(double));
+        });
 
-    py::class_<llapi_observation_t::IMU>(m, "IMU")
+    py::class_<llapi_observation_t::IMU>(m, "ObsIMU")
         .def(py::init<>())
         .def_readwrite("orientation", &llapi_observation_t::IMU::orientation)
-        .def_readwrite("angular_velocity", &llapi_observation_t::IMU::angular_velocity)
-        .def_readwrite("linear_acceleration", &llapi_observation_t::IMU::linear_acceleration)
-        .def_readwrite("magnetic_field", &llapi_observation_t::IMU::magnetic_field);
+        .def_property("angular_velocity", [](const llapi_observation_t::IMU &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.angular_velocity, base);
+        }, [](llapi_observation_t::IMU &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.angular_velocity, arr.data(), 3 * sizeof(double));
+        })
+        .def_property("linear_acceleration", [](const llapi_observation_t::IMU &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.linear_acceleration, base);
+        }, [](llapi_observation_t::IMU &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.linear_acceleration, arr.data(), 3 * sizeof(double));
+        })
+        .def_property("magnetic_field", [](const llapi_observation_t::IMU &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {3}, {sizeof(double)});
+            return py::array(dtype, {3}, {sizeof(double)}, self.magnetic_field, base);
+        }, [](llapi_observation_t::IMU &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.magnetic_field, arr.data(), 3 * sizeof(double));
+        });
 
-    py::class_<llapi_observation_t::Motor>(m, "Motor")
+    py::class_<llapi_observation_t::Motor>(m, "ObsMotor")
         .def(py::init<>())
-        .def_readwrite("position", &llapi_observation_t::Motor::position)
-        .def_readwrite("velocity", &llapi_observation_t::Motor::velocity)
-        .def_readwrite("torque", &llapi_observation_t::Motor::torque)
+        .def_property("position", [](const llapi_observation_t::Motor &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {NUM_MOTORS}, {sizeof(double)});
+            return py::array(dtype, {NUM_MOTORS}, {sizeof(double)}, self.position, base);
+        }, [](llapi_observation_t::Motor &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.position, arr.data(), NUM_MOTORS * sizeof(double));
+        })
+        .def_property("velocity", [](const llapi_observation_t::Motor &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {NUM_MOTORS}, {sizeof(double)});
+            return py::array(dtype, {NUM_MOTORS}, {sizeof(double)}, self.velocity, base);
+        }, [](llapi_observation_t::Motor &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.velocity, arr.data(), NUM_MOTORS * sizeof(double));
+        })
+        .def_property("torque", [](const llapi_observation_t::Motor &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {NUM_MOTORS}, {sizeof(double)});
+            return py::array(dtype, {NUM_MOTORS}, {sizeof(double)}, self.torque, base);
+        }, [](llapi_observation_t::Motor &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.torque, arr.data(), NUM_MOTORS * sizeof(double));
+        });
 
-    py::class_<llapi_observation_t::Joint>(m, "Joint")
+    py::class_<llapi_observation_t::Joint>(m, "ObsUnactJoints")
         .def(py::init<>())
-        .def_readwrite("position", &llapi_observation_t::Joint::position)
-        .def_readwrite("velocity", &llapi_observation_t::Joint::velocity)
+        .def_property("position", [](const llapi_observation_t::Joint &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {NUM_UNACT_JOINTS}, {sizeof(double)});
+            return py::array(dtype, {NUM_UNACT_JOINTS}, {sizeof(double)}, self.position, base);
+        }, [](llapi_observation_t::Joint &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.position, arr.data(), NUM_UNACT_JOINTS * sizeof(double));
+        })
+        .def_property("velocity", [](const llapi_observation_t::Joint &self) -> py::array {
+            // getter
+            auto dtype = py::dtype(py::format_descriptor<double>::format());
+            auto base = py::array(dtype, {NUM_UNACT_JOINTS}, {sizeof(double)});
+            return py::array(dtype, {NUM_UNACT_JOINTS}, {sizeof(double)}, self.velocity, base);
+        }, [](llapi_observation_t::Joint &self, py::array_t<double> arr) {
+            // setter
+            std::memcpy(self.velocity, arr.data(), NUM_UNACT_JOINTS * sizeof(double));
+        });
 
     py::class_<llapi_limits_t>(m, "Limits")
         .def(py::init<>())
