@@ -74,7 +74,7 @@ typedef struct {
   bool error;
 
   // Estimated pose and velocity of base frame
-  struct {
+  struct Base {
     double translation[3];
     llapi_quaternion_t orientation;
     double linear_velocity[3];
@@ -82,7 +82,7 @@ typedef struct {
   } base;
 
   // Raw sensor signals from IMU
-  struct {
+  struct IMU {
     llapi_quaternion_t orientation;
     double angular_velocity[3];
     double linear_acceleration[3];
@@ -90,14 +90,14 @@ typedef struct {
   } imu;
 
   // Actuated joints
-  struct {
+  struct Motor {
     double position[NUM_MOTORS];
     double velocity[NUM_MOTORS];
     double torque[NUM_MOTORS];
   } motor;
 
   // Unactuated joints
-  struct {
+  struct Joint {
     double position[NUM_UNACT_JOINTS];
     double velocity[NUM_UNACT_JOINTS];
   } joint;
