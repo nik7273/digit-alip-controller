@@ -2,3 +2,4 @@
 build/*
 *.so
 extern/*
+*/MUJOCO_LOG.TXT

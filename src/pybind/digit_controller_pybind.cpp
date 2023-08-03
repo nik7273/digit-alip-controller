@@ -180,14 +180,18 @@ PYBIND11_MODULE(digit_controller_pybind, m) {
         .def_readwrite("velocity", &llapi_motor_t::velocity)
         .def_readwrite("damping", &llapi_motor_t::damping);
 
+    PYBIND11_NUMPY_DTYPE(llapi_motor_t, torque, velocity, damping);
+    py::dtype dt = py::dtype::of<llapi_motor_t>();
+    m.attr("llapi_motor_dtype") = dt;
+
     py::class_<llapi_command_t>(m, "Command")
         .def(py::init<>())
-        .def_property("motors", [](const llapi_command_t &self) -> py::array {
-            auto dtype = py::dtype(py::format_descriptor<double>::format());
-            auto base = py::array(dtype, {NUM_MOTORS}, {sizeof(double)});
-            return py::array(dtype, {NUM_MOTORS}, {sizeof(double)}, self.motors, base);
-        }, [](llapi_command_t &self, py::array_t<double> arr) {
-            std::memcpy(self.motors, arr.data(), NUM_MOTORS * sizeof(double));
+        .def_property("motors", [](const llapi_command_t &self) -> py::array_t<llapi_motor_t> {
+            auto dtype = py::dtype::of<llapi_motor_t>();
+            auto base = py::array(dtype, {NUM_MOTORS}, {sizeof(llapi_motor_t)});
+            return py::array(dtype, {NUM_MOTORS}, {sizeof(llapi_motor_t)}, self.motors, base);
+        }, [](llapi_command_t &self, py::array_t<llapi_motor_t> arr) {
+            std::memcpy(self.motors, arr.data(), NUM_MOTORS * sizeof(llapi_motor_t));
         })
         .def_readwrite("fallback_opmode", &llapi_command_t::fallback_opmode)
         .def_readwrite("apply_command", &llapi_command_t::apply_command);
