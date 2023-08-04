@@ -22,8 +22,9 @@ pybind:
 
 all:
 	g++ $(COMMON) $(INIT_DIR) $(INCLUDE_DIR) $(LLAPI) src/controller/Digit_Controller.cpp src/controller/utils.cpp src/gen/dyn/*.cc src/gen/kin/*.cc
-	mv *.o build
+	find . -maxdepth 1 -name "*.o" -exec mv {} build/ \; # move .o files if they exist
 	g++ $(PYBIND_COMMON) $(shell python3-config --includes) $(PYBIND_INCLUDE) $(INCLUDE_DIR) $(INIT_DIR) $(LLAPI) build/* src/pybind/digit_controller_pybind.cpp -o digit_controller_pybind$(shell python3-config --extension-suffix)
-	mv *.o build
+	find . -maxdepth 1 -name "*.o" -exec mv {} build/ \; # move .o files if they exist
 	mv digit_controller_pybind$(shell python3-config --extension-suffix) example
-	mv *.so build
+	find . -maxdepth 1 -name "*.so" -exec mv {} build/ \; # move .so files if they exist
+

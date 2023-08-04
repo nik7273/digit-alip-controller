@@ -4,16 +4,14 @@ Standalone ALIP 1-Step Controller
 This is a standalone repository containing the ALIP 1-step controller for the Digit humanoid robot.
 
 
-## Setup
+## Setup for quick working example
 ```
-conda env create -n ENVNAME --file ENV.yml
+conda env create -f alip-env.yml
+mkdir build
+mkdir extern
+git submodule add -f https://github.com/pybind/pybind11.git extern/pybind11
+make all
 ```
-
-## Requirements
-### Conda
-
-### pybind11
-
 
 ## Makefile
 To build the dependencies for the controller:
