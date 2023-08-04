@@ -1,3 +1,7 @@
+"""
+Just tests to see whether relevant bindings are readable.
+"""
+
 import digit_controller_pybind as dc
 
 print("Digit Controller")

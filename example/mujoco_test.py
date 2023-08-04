@@ -7,38 +7,48 @@ import digit_controller_pybind as dc
 
 NUM_MOTORS = 20
 
-AGILITY_NAMES = [
-    "left-leg.hip-roll",
-    "left-leg.hip-yaw",
-    "left-leg.hip-pitch",
-    "left-leg.knee",
-    "left-leg.toe-a",
-    "left-leg.toe-b",
-    "right-leg.hip-roll",
-    "right-leg.hip-yaw",
-    "right-leg.hip-pitch",
-    "right-leg.knee",
-    "right-leg.toe-a",
-    "right-leg.toe-b",
-    "left-leg.shoulder-roll",
-    "left-leg.shoulder-pitch",
-    "left-leg.shoulder-yaw",
-    "left-leg.elbow",
-    "right-leg.shoulder-roll",
-    "right-leg.shoulder-pitch",
-    "right-leg.shoulder-yaw",
-    "right-leg.elbow",
-    "left-leg.shin",
-    "left-leg.tarsus",
-    "left-leg.toe-pitch",
-    "left-leg.toe-roll",
-    "left-leg.heel-spring",
-    "right-leg.shin",
-    "right-leg.tarsus",
-    "right-leg.toe-pitch",
-    "right-leg.toe-roll",
-    "right-leg.heel-spring",
-]
+AGILITY_NAMES = ["left-hip-roll", "left-hip-yaw", "left-hip-pitch",
+        "left-knee", "left-toe-A", "left-toe-B", 
+        "right-hip-roll", "right-hip-yaw", "right-hip-pitch",
+        "right-knee", "right-toe-A", "right-toe-B",
+        "left-shoulder-roll", "left-shoulder-pitch", "left-shoulder-yaw", "left-elbow",
+        "right-shoulder-roll", "right-shoulder-pitch", "right-shoulder-yaw", "right-elbow",
+        "left-shin", "left-tarsus", "left-toe-pitch", "left-toe-roll", "left-heel-spring",
+        "right-shin", "right-tarsus", "right-toe-pitch", "right-toe-roll", "right-heel-spring"]
+
+# names for version from rl repo
+# AGILITY_NAMES = [
+#     "left-leg.hip-roll",
+#     "left-leg.hip-yaw",
+#     "left-leg.hip-pitch",
+#     "left-leg.knee",
+#     "left-leg.toe-a",
+#     "left-leg.toe-b",
+#     "right-leg.hip-roll",
+#     "right-leg.hip-yaw",
+#     "right-leg.hip-pitch",
+#     "right-leg.knee",
+#     "right-leg.toe-a",
+#     "right-leg.toe-b",
+#     "left-leg.shoulder-roll",
+#     "left-leg.shoulder-pitch",
+#     "left-leg.shoulder-yaw",
+#     "left-leg.elbow",
+#     "right-leg.shoulder-roll",
+#     "right-leg.shoulder-pitch",
+#     "right-leg.shoulder-yaw",
+#     "right-leg.elbow",
+#     "left-leg.shin",
+#     "left-leg.tarsus",
+#     "left-leg.toe-pitch",
+#     "left-leg.toe-roll",
+#     "left-leg.heel-spring",
+#     "right-leg.shin",
+#     "right-leg.tarsus",
+#     "right-leg.toe-pitch",
+#     "right-leg.toe-roll",
+#     "right-leg.heel-spring",
+# ]
 
 LIMITS = dc.Limits()
 LIMITS.torque_limit = [
@@ -118,7 +128,7 @@ def mujoco_test():
     gc.Set_Initial_Walking_Gains_()
 
     # test controller inside mujoco
-    m = mujoco.MjModel.from_xml_path("../assets/digit-v3.xml")
+    m = mujoco.MjModel.from_xml_path("../assets/digit-v3-armfixed-visiblecollision.xml")
     d = mujoco.MjData(m)
 
     # initialize position
@@ -146,7 +156,7 @@ def mujoco_test():
     mujoco.mj_forward(m, d)
 
     # Adjust base height to make sure foot contacts with ground    
-    left_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "left-leg.toe-roll")
+    left_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "left-toe-roll")#left-leg.toe-roll")
     world_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "world")
     dist_max = 0
 
@@ -155,7 +165,7 @@ def mujoco_test():
             if abs(con.dist * con.frame[2]) > abs(dist_max):
                 dist_max = con.dist * con.frame[2]
 
-    right_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "right-leg.toe-roll")
+    right_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "right-toe-roll")# "right-leg.toe-roll")
     world_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "world")
     for con in d.contact:
         if (m.geom_bodyid[con.geom1] == world_id and m.geom_bodyid[con.geom2] == right_toe_roll_id):
@@ -165,8 +175,11 @@ def mujoco_test():
     d.qpos[2] -= dist_max
 
     # Turn off control limits
-    # for i in range(m.nu):
-    #     m.actuator_ctrllimited[i] = False
+    for i in range(m.nu):
+        m.actuator_ctrllimited[i] = False
+
+    command = dc.Command()
+    observation = dc.Observation()
 
     with mujoco.viewer.launch_passive(m, d) as viewer:
         # Close the viewer automatically after 30 wall-seconds.
@@ -177,7 +190,7 @@ def mujoco_test():
             # mj_step can be replaced with code that also evaluates
             # a policy and applies a control signal before stepping the physics.
             # mujoco.mj_step(m, d)
-            step_controller(gc, m, d)
+            step_controller(gc, m, d, command, observation)
 
             # Example modification of a viewer option: toggle contact points every two seconds.
             with viewer.lock():
@@ -192,15 +205,15 @@ def mujoco_test():
                 time.sleep(time_until_next_step)
 
 
-def step_controller(gc: dc.Digit_Controller, m: mujoco.MjModel, d: mujoco.MjData):
-    command = dc.Command()
-    observation = dc.Observation()
-
+def step_controller(
+    gc: dc.Digit_Controller, 
+    m: mujoco.MjModel, 
+    d: mujoco.MjData, 
+    command: dc.Command, 
+    observation: dc.Observation,
+):
     observation.time = d.time
     observation.error = 0
-
-    # Get base data
-    baseId = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "torso.base")
 
     for j in range(3):
         observation.base.translation[j] = d.qpos[j]
@@ -210,12 +223,11 @@ def step_controller(gc: dc.Digit_Controller, m: mujoco.MjModel, d: mujoco.MjData
     observation.base.orientation.y = d.qpos[5]
     observation.base.orientation.z = d.qpos[6]
 
-    rotMat = np.zeros((9,), dtype=np.double)
+    rotMat = np.zeros((9,1), dtype=np.float64, order='C')
     mujoco.mju_quat2Mat(rotMat, d.qpos[3:7])
-    linVel = np.zeros((3,), dtype=np.double)
-    # angVel = np.zeros((3,), dtype=np.double)
-    # mujoco.mju_mulMatTVec(linVel, rotMat, d.qvel, 3, 3)
-    linVel = rotMat.reshape((3,3)).T @ d.qvel[3:6]
+    linVel = np.empty((3,), dtype=np.float64, order='C')
+    linVel.flags.writeable = True
+    mujoco.mju_mulMatTVec(linVel, rotMat.reshape((3,3)), d.qvel[:3])
 
     for j in range(3):
         observation.base.linear_velocity[j] = linVel[j]
@@ -272,12 +284,13 @@ def step_controller(gc: dc.Digit_Controller, m: mujoco.MjModel, d: mujoco.MjData
         act_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_ACTUATOR, AGILITY_NAMES[j])
         if act_id == -1:
             print("Could not find actuator")
-            exit()
-        d.ctrl[act_id] = (
-            command.motors[j][0] # .torque
-            + command.motors[j][1] # .damping
-            * (command.motors[j][2] - observation.motor.velocity[j])
-        ) / m.actuator_gear[act_id, 0]
+        else:
+            d.ctrl[act_id] = (
+                command.motors[j][0] # .torque
+                + command.motors[j][2] # .damping
+                * (command.motors[j][1] - observation.motor.velocity[j])
+            ) / m.actuator_gear[act_id, 0]
+
 
     mujoco.mj_step(m, d)
 
