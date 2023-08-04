@@ -7,6 +7,7 @@ import digit_controller_pybind as dc
 
 NUM_MOTORS = 20
 
+# fmt: off
 AGILITY_NAMES = ["left-hip-roll", "left-hip-yaw", "left-hip-pitch",
         "left-knee", "left-toe-A", "left-toe-B", 
         "right-hip-roll", "right-hip-yaw", "right-hip-pitch",
@@ -15,6 +16,7 @@ AGILITY_NAMES = ["left-hip-roll", "left-hip-yaw", "left-hip-pitch",
         "right-shoulder-roll", "right-shoulder-pitch", "right-shoulder-yaw", "right-elbow",
         "left-shin", "left-tarsus", "left-toe-pitch", "left-toe-roll", "left-heel-spring",
         "right-shin", "right-tarsus", "right-toe-pitch", "right-toe-roll", "right-heel-spring"]
+# fmt: on
 
 # names for version from rl repo
 # AGILITY_NAMES = [
@@ -118,6 +120,7 @@ LIMITS.velocity_limit = [
     4.581489,
 ]
 
+
 def mujoco_test():
     # initialize the controller
     gc = dc.Digit_Controller()
@@ -132,6 +135,7 @@ def mujoco_test():
     d = mujoco.MjData(m)
 
     # initialize position
+    # fmt: off
     init_pos = np.array(
         [
             0.003237, -0.097065, 1.033634, 0.999986, -0.001082,-0.005159, -0.000101,  # base x y z, base quat
@@ -151,24 +155,36 @@ def mujoco_test():
             0.1506, -1.0922, -0.0017, 0.1391,  # right-shoulder-roll, right-shoulder-pitch, right-shoulder-yaw, right-elbow
         ]
     )
+    # fmt: on
+
     d.qpos[:] = init_pos
     d.qvel[:] = 0
     mujoco.mj_forward(m, d)
 
-    # Adjust base height to make sure foot contacts with ground    
-    left_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "left-toe-roll")#left-leg.toe-roll")
+    # Adjust base height to make sure foot contacts with ground
+    left_toe_roll_id = mujoco.mj_name2id(
+        m, mujoco.mjtObj.mjOBJ_BODY, "left-toe-roll"
+    )  # left-leg.toe-roll")
     world_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "world")
     dist_max = 0
 
     for con in d.contact:
-        if (m.geom_bodyid[con.geom1] == world_id and m.geom_bodyid[con.geom2] == left_toe_roll_id):
+        if (
+            m.geom_bodyid[con.geom1] == world_id
+            and m.geom_bodyid[con.geom2] == left_toe_roll_id
+        ):
             if abs(con.dist * con.frame[2]) > abs(dist_max):
                 dist_max = con.dist * con.frame[2]
 
-    right_toe_roll_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "right-toe-roll")# "right-leg.toe-roll")
+    right_toe_roll_id = mujoco.mj_name2id(
+        m, mujoco.mjtObj.mjOBJ_BODY, "right-toe-roll"
+    )  # "right-leg.toe-roll")
     world_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, "world")
     for con in d.contact:
-        if (m.geom_bodyid[con.geom1] == world_id and m.geom_bodyid[con.geom2] == right_toe_roll_id):
+        if (
+            m.geom_bodyid[con.geom1] == world_id
+            and m.geom_bodyid[con.geom2] == right_toe_roll_id
+        ):
             if abs(con.dist * con.frame[2]) > abs(dist_max):
                 dist_max = con.dist * con.frame[2]
 
@@ -206,10 +222,10 @@ def mujoco_test():
 
 
 def step_controller(
-    gc: dc.Digit_Controller, 
-    m: mujoco.MjModel, 
-    d: mujoco.MjData, 
-    command: dc.Command, 
+    gc: dc.Digit_Controller,
+    m: mujoco.MjModel,
+    d: mujoco.MjData,
+    command: dc.Command,
     observation: dc.Observation,
 ):
     observation.time = d.time
@@ -223,11 +239,11 @@ def step_controller(
     observation.base.orientation.y = d.qpos[5]
     observation.base.orientation.z = d.qpos[6]
 
-    rotMat = np.zeros((9,1), dtype=np.float64, order='C')
+    rotMat = np.zeros((9, 1), dtype=np.float64, order="C")
     mujoco.mju_quat2Mat(rotMat, d.qpos[3:7])
-    linVel = np.empty((3,), dtype=np.float64, order='C')
+    linVel = np.empty((3,), dtype=np.float64, order="C")
     linVel.flags.writeable = True
-    mujoco.mju_mulMatTVec(linVel, rotMat.reshape((3,3)), d.qvel[:3])
+    mujoco.mju_mulMatTVec(linVel, rotMat.reshape((3, 3)), d.qvel[:3])
 
     for j in range(3):
         observation.base.linear_velocity[j] = linVel[j]
@@ -271,7 +287,9 @@ def step_controller(
     for j in range(10):
         observation.joint.position[j] = 0
         observation.joint.velocity[j] = 0
-        joint_id = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_JOINT, AGILITY_NAMES[j + 20])
+        joint_id = mujoco.mj_name2id(
+            m, mujoco.mjtObj.mjOBJ_JOINT, AGILITY_NAMES[j + 20]
+        )
         if joint_id == -1:
             print("Couldn't find joint", AGILITY_NAMES[j + 20])
         else:
@@ -286,13 +304,13 @@ def step_controller(
             print("Could not find actuator")
         else:
             d.ctrl[act_id] = (
-                command.motors[j][0] # .torque
-                + command.motors[j][2] # .damping
+                command.motors[j][0]  # .torque
+                + command.motors[j][2]  # .damping
                 * (command.motors[j][1] - observation.motor.velocity[j])
             ) / m.actuator_gear[act_id, 0]
 
-
     mujoco.mj_step(m, d)
+
 
 if __name__ == "__main__":
     mujoco_test()
