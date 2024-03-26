@@ -1,3 +1,10 @@
+"""
+Test to verify that ALIP 1 step controller is runnable in MuJoCo.
+Expected behavior:
+- first ten seconds: standing
+- next fifty seconds: stepping/walking
+"""
+
 import time
 import mujoco
 import mujoco.viewer
@@ -200,7 +207,12 @@ def mujoco_test():
     with mujoco.viewer.launch_passive(m, d) as viewer:
         # Close the viewer automatically after 30 wall-seconds.
         start = time.time()
-        while viewer.is_running() and time.time() - start < 30:
+        while viewer.is_running() and time.time() - start < 60:
+            if time.time() - start < 10:
+                gc.Set_Ctrl_Mode_(0)
+            else:
+                gc.Set_Ctrl_Mode_(2)
+
             step_start = time.time()
 
             # mj_step can be replaced with code that also evaluates

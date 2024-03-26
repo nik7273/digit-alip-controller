@@ -14,7 +14,8 @@ PYBIND11_MODULE(digit_controller_pybind, m) {
         .def("Initialize_", &Digit_Controller::Initialize_)
         .def("Set_Initial_Standing_Gains_", &Digit_Controller::Set_Initial_Standing_Gains_)
         .def("Set_Initial_Walking_Gains_", &Digit_Controller::Set_Initial_Walking_Gains_)
-        .def("Update_", &Digit_Controller::Update_);
+        .def("Update_", &Digit_Controller::Update_)
+        .def("Set_Ctrl_Mode_", &Digit_Controller::Set_Ctrl_Mode_);
 
     // agility llapi types
     py::class_<llapi_quaternion_t>(m, "Quaternion")
