@@ -15,7 +15,20 @@ PYBIND11_MODULE(digit_controller_pybind, m) {
         .def("Set_Initial_Standing_Gains_", &Digit_Controller::Set_Initial_Standing_Gains_)
         .def("Set_Initial_Walking_Gains_", &Digit_Controller::Set_Initial_Walking_Gains_)
         .def("Update_", &Digit_Controller::Update_)
-        .def("Set_Ctrl_Mode_", &Digit_Controller::Set_Ctrl_Mode_);
+        .def("Set_Ctrl_Mode_", &Digit_Controller::Set_Ctrl_Mode_)
+        .def_readwrite("vel_x_des_tuned", &Digit_Controller::vel_x_des_tuned_)
+        .def_readwrite("vel_y_des_tuned", &Digit_Controller::vel_y_des_tuned_)
+        .def_readwrite("turn_rps_tuned", &Digit_Controller::turn_rps_tuned_)
+        .def_readwrite("vel_x_des_filtered", &Digit_Controller::vel_x_des_filtered_)
+        .def_readwrite("vel_y_des_filtered", &Digit_Controller::vel_y_des_filtered_)
+        .def_readwrite("turn_rps_filtered", &Digit_Controller::turn_rps_filtered_)
+        .def_readwrite("x_offset_tuned", &Digit_Controller::x_offset_tuned_)
+        .def_readwrite("y_offset_tuned", &Digit_Controller::y_offset_tuned_)
+        .def_readwrite("z_offset_tuned", &Digit_Controller::z_offset_tuned_)
+        .def_readwrite("yaw_offset_tuned", &Digit_Controller::yaw_offset_tuned_)
+        .def_readwrite("pitch_offset_tuned", &Digit_Controller::pitch_offset_tuned_)
+        .def_readwrite("roll_offset_tuned", &Digit_Controller::roll_offset_tuned_);
+
 
     // agility llapi types
     py::class_<llapi_quaternion_t>(m, "Quaternion")
