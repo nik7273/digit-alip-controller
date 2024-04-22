@@ -1,10 +1,11 @@
 Standalone ALIP 1-Step Controller
 ====================
 
-This is a standalone repository containing the ALIP 1-step controller for the Digit humanoid robot.
+This is a standalone repository containing the Angular Momentum Linear Inverted Pendulum (ALIP) 1-step controller and corresponding Python bindings for the Digit humanoid robot. This is based on Grant Gibson's [Digit C++ Controller](https://github.com/UMich-BipedLab/digit_locomotion_controller).
 
 
 ## Setup for quick working example
+This has been tested on Ubuntu 20 and Ubuntu 22.
 ```
 conda env create -f alip-env.yml
 mkdir build
@@ -37,6 +38,7 @@ We have an example running the controller within MuJoCo. From the root directory
 $ cd example
 $ python mujoco_test.py
 ```
+If you run into an error you may need to rename the `.so` file to `digit_controller_pybind.so`.
 
 ## Information on Python bindings
 `src/pybind/digit_controller_pybind.cpp` contains the currently existing bindings. Currently, you can initialize the controller as follows:
@@ -55,3 +57,7 @@ gc.Update_(command, observation, limits)
 
 ### Adding new bindings
 If you would like to add new bindings to other variables or functions within the controller code, please consult [the pybind11 documentation](https://pybind11.readthedocs.io/en/stable/classes.html). You may wish to do this, for example, if you would like access to the variables in `include/controller/Digit_Controller.hpp` via the `DigitController` object.
+
+## References
+[Grant Gibson's Digit C++ controller](https://github.com/UMich-BipedLab/digit_locomotion_controller)  
+[Angular Momentum about the Contact Point for Control of Bipedal Locomotion: Validation in a LIP-based Controller](https://arxiv.org/abs/2008.10763)
