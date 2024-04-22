@@ -1,7 +1,7 @@
 Standalone ALIP 1-Step Controller
 ====================
 
-This is a standalone repository containing the Angular Momentum Linear Inverted Pendulum (ALIP) 1-step controller and corresponding Python bindings for the Digit humanoid robot. This is based on Grant Gibson's [Digit C++ Controller](https://github.com/UMich-BipedLab/digit_locomotion_controller).
+This is a standalone repository containing the Angular Momentum Linear Inverted Pendulum (ALIP) 1-step controller and corresponding Python bindings for the Digit humanoid robot. This is based on an old version of Grant Gibson's [Digit C++ Controller](https://github.com/UMich-BipedLab/digit_locomotion_controller).
 
 
 ## Setup for quick working example
